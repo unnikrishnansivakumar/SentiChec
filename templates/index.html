@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="stuff, to, help, search, engines, not" name="keywords">
+<meta content="What this page is about." name="description">
+<meta content="Display Webcam Stream" name="title">
+<script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<title>Sentichec :) :( X|</title>
+  
+<style>
+#container {
+    margin: 0px auto;
+    width: 500px;
+    height: 375px;
+    border: 10px #333 solid;
+}
+#videoElement {
+    width: 500px;
+    height: 375px;
+    background-color: #666;
+}
+#takepic {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+#clearpic {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+}
+</style>
+</head>
+  
+<body>
+<div id="container">
+    <video autoplay="true" id="videoElement">     
+    </video>
+    <br><br><br>
+
+    <div class = "all buttons" style = 'display:inline'>
+    <button id = "takepic">Take Photo</button>
+    <button id = "clearpic">Clear Photo</button>
+    </div>
+    <br><br>
+    <canvas id="canvas">
+  	</canvas>
+
+    <br><br><br>
+    <div class="output">
+    <img id="photo" alt="The screen capture will appear in this box.">
+  	</div>
+
+</div>
+    <script>
+    	var video = document.querySelector("#videoElement");
+    	var width = 320;    // We will scale the photo width to this
+		var height = 0;     // This will be computed based on the input stream
+
+		var streaming = false;
+
+		var canvas = null;
+		var photo = null;
+		var startbutton = null;
+
+
+		function startup() {
+			console.log('entered startup')
+			canvas = document.getElementById('canvas');
+		    photo = document.getElementById('photo');
+		    startbutton = document.getElementById('startbutton');
+		}
+ 
+		navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
+		 
+		if (navigator.mediaDevices.getUserMedia) {
+		  navigator.mediaDevices.getUserMedia({ video: true })
+		    .then(function (stream) {
+		      video.srcObject = stream;
+		    })
+		    .catch(function (err0r) {
+		      console.log("Something went wrong!");
+		    });
+		}
+
+		var video = document.querySelector("#videoElement");
+		 
+		function videoError(e) {
+		    // do something
+		}
+
+		video.addEventListener('canplay', function(ev){
+	      if (!streaming) {
+	        height = video.videoHeight / (video.videoWidth/width);
+	      
+	        video.setAttribute('width', width);
+	        video.setAttribute('height', height);
+	        canvas.setAttribute('width', width);
+	        canvas.setAttribute('height', height);
+	        streaming = true;
+	      }
+	    }, false);
+
+
+		function takepicture() {
+			console.log("entered func");
+		    var context = canvas.getContext('2d');
+		    if (width && height) {
+		      canvas.width = 400;
+		      canvas.height = 400;
+		      context.drawImage(video, 0, 0, width, height);
+		    
+		      var data = canvas.toDataURL('image/png');
+		      photo.setAttribute('src', data);
+
+		      datatosend = {userInput:data};
+
+		      $.post('/photoinc',datatosend,function(response){
+		      	console.log('got response',datatosend)
+		      });
+
+		      //saveBase64AsFile(data,'exp.jpg')			  
+		    } else {
+		      clearphoto();
+		    }
+		  }
+
+
+
+		function clearphoto() {
+			    var context = canvas.getContext('2d');
+			    context.fillStyle = "#AAA";
+			    context.fillRect(0, 0, canvas.width, canvas.height);
+
+			    var data = canvas.toDataURL('image/png');
+			    photo.setAttribute('src', data);
+			  }
+
+		function saveBase64AsFile(base64, fileName) {
+			    var link = document.createElement("a");
+			    link.setAttribute("href", base64);
+			    link.setAttribute("download", fileName);
+			    link.click();
+			}
+
+		$('#takepic').click(function(){
+			console.log('entered')
+			startup()
+			takepicture();
+		});
+
+		$('#clearpic').click(function(){
+			console.log('entered')
+			clearphoto;
+		});
+
+    </script>
+</body>
+</html>
